@@ -20,6 +20,13 @@ proxyPort = int(args.port)
 try:
   # Create a server socket
   # ~~~~ INSERT CODE ~~~~
+  
+  # Server will use port 8080
+  serverPort = 8080
+
+  # Server configured to use the AF_INET address family, host name is domain address or IPv4 address
+  serverSocket = socket(AF_INET, SOCK_STREAM)
+
   # ~~~~ END CODE INSERT ~~~~
   print ('Created socket')
 except:
@@ -29,6 +36,10 @@ except:
 try:
   # Bind the the server socket to a host and port
   # ~~~~ INSERT CODE ~~~~
+
+  # Server bound to port defined earlier
+  serverSocket.bind('', serverPort)
+
   # ~~~~ END CODE INSERT ~~~~
   print ('Port is bound')
 except:
@@ -38,6 +49,10 @@ except:
 try:
   # Listen on the server socket
   # ~~~~ INSERT CODE ~~~~
+
+  # Server begins listening on port 8080
+  serverSocket.listen(1)
+
   # ~~~~ END CODE INSERT ~~~~
   print ('Listening to socket')
 except:
@@ -52,6 +67,10 @@ while True:
   # Accept connection from client and store in the clientSocket
   try:
     # ~~~~ INSERT CODE ~~~~
+
+    # Accept the client's connection request if present
+    connectionSocket, addr = serverSocket.accept()
+
     # ~~~~ END CODE INSERT ~~~~
     print ('Received a connection')
   except:
@@ -61,6 +80,10 @@ while True:
   # Get HTTP request from client
   # and store it in the variable: message_bytes
   # ~~~~ INSERT CODE ~~~~
+  
+  # Receive data from client connection
+  message_bytes = connectionSocket.recv(BUFFER_SIZE)
+
   # ~~~~ END CODE INSERT ~~~~
   message = message_bytes.decode('utf-8')
   print ('Received request:')
