@@ -137,7 +137,7 @@ while True:
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
 
-
+    connectionSocket.send('HTTP/1.1 200 OK\n')
 
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
