@@ -20,12 +20,9 @@ proxyPort = int(args.port)
 try:
   # Create a server socket
   # ~~~~ INSERT CODE ~~~~
-  
-  # Server will use port 8080
-  serverPort = 8080
 
   # Server configured to use the AF_INET address family, host name is domain address or IPv4 address
-  serverSocket = socket(AF_INET, SOCK_STREAM)
+  serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
   # ~~~~ END CODE INSERT ~~~~
   print ('Created socket')
@@ -37,8 +34,11 @@ try:
   # Bind the the server socket to a host and port
   # ~~~~ INSERT CODE ~~~~
 
+  # Server will use port specified by user
+  serverPort = proxyPort
+
   # Server bound to port defined earlier
-  serverSocket.bind('', serverPort)
+  serverSocket.bind((proxyHost, serverPort))
 
   # ~~~~ END CODE INSERT ~~~~
   print ('Port is bound')
@@ -69,7 +69,7 @@ while True:
     # ~~~~ INSERT CODE ~~~~
 
     # Accept the client's connection request if present
-    connectionSocket, addr = serverSocket.accept()
+    (connectionSocket, addr) = serverSocket.accept()
 
     # ~~~~ END CODE INSERT ~~~~
     print ('Received a connection')
@@ -136,6 +136,9 @@ while True:
     # ProxyServer finds a cache hit
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
+
+
+
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
