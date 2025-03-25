@@ -69,7 +69,7 @@ while True:
     # ~~~~ INSERT CODE ~~~~
 
     # Accept the client's connection request if present
-    (connectionSocket, addr) = serverSocket.accept()
+    (clientSocket, addr) = serverSocket.accept()
 
     # ~~~~ END CODE INSERT ~~~~
     print ('Received a connection')
@@ -82,7 +82,7 @@ while True:
   # ~~~~ INSERT CODE ~~~~
   
   # Receive data from client connection
-  message_bytes = connectionSocket.recv(BUFFER_SIZE)
+  message_bytes = clientSocket.recv(BUFFER_SIZE)
 
   # ~~~~ END CODE INSERT ~~~~
   message = message_bytes.decode('utf-8')
@@ -139,7 +139,7 @@ while True:
 
     # Cache hit thus return OK and cached file data
     fileData = 'HTTP/1.1 200 OK\r\n\r\n' + str(cacheData)
-    connectionSocket.send(fileData.encode())
+    clientSocket.send(fileData.encode())
 
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
@@ -209,7 +209,7 @@ while True:
       # Send the response to the client
       # ~~~~ INSERT CODE ~~~~
 
-      connectionSocket.send(response)
+      clientSocket.send(response)
 
       # ~~~~ END CODE INSERT ~~~~
 
