@@ -138,12 +138,13 @@ while True:
     # ~~~~ INSERT CODE ~~~~
 
     # Cache hit thus return OK and cached file data
-    connectionSocket.send('HTTP/1.1 200 OK\n\n' + cacheData)
+    fileData = 'HTTP/1.1 200 OK\r\n\r\n' + str(cacheData)
+    connectionSocket.send(fileData.encode())
 
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
-    print ('> ' + cacheData)
+    print ('> ' + str(cacheData))
   except:
     # cache miss.  Get resource from origin server
     originServerSocket = None
@@ -177,7 +178,8 @@ while True:
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
 
-
+      originServerRequest = method + ' ' + resource + ' ' + 'HTTP/1.1'
+      originServerRequestHeader = 'Host:' + hostname
 
       # ~~~~ END CODE INSERT ~~~~
 
@@ -199,10 +201,16 @@ while True:
 
       # Get the response from the origin server
       # ~~~~ INSERT CODE ~~~~
+
+      response = originServerSocket.recv(BUFFER_SIZE)
+
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client
       # ~~~~ INSERT CODE ~~~~
+
+      connectionSocket.send(response)
+
       # ~~~~ END CODE INSERT ~~~~
 
       # Create a new file in the cache for the requested file.
@@ -214,6 +222,9 @@ while True:
 
       # Save origin server response in the cache file
       # ~~~~ INSERT CODE ~~~~
+
+      cacheFile.write(response)
+
       # ~~~~ END CODE INSERT ~~~~
       cacheFile.close()
       print ('cache file closed')
