@@ -122,7 +122,7 @@ while True:
   try:
     cacheLocation = './' + hostname + resource
     if cacheLocation.endswith('/'):
-        cacheLocation = cacheLocation + 'default'
+      cacheLocation = cacheLocation + 'default'
 
     print ('Cache location:\t\t' + cacheLocation)
 
@@ -139,7 +139,7 @@ while True:
 
     # Cache hit thus return OK and cached file data
     fileData = 'HTTP/1.1 200 OK\r\n\r\n' + str(cacheData)
-    clientSocket.send(fileData.encode())
+    clientSocket.send(str(fileData))
 
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
@@ -179,7 +179,7 @@ while True:
       # ~~~~ INSERT CODE ~~~~
 
       originServerRequest = method + ' ' + resource + ' ' + 'HTTP/1.1'
-      originServerRequestHeader = 'Host:' + hostname
+      originServerRequestHeader = 'Host: ' + hostname
 
       # ~~~~ END CODE INSERT ~~~~
 
@@ -204,30 +204,62 @@ while True:
 
       response = originServerSocket.recv(BUFFER_SIZE)
 
+      # split response and extract status code
+      responseParts = response.split(b' ', 2)
+      responseHTTPVersion = responseParts[0]
+      responseStatusCode = int(responseParts[1])
+      responseHeaders = responseParts[2]
+
+      # When moved, go to new server and get resource
+      if (responseStatusCode == 301 or responseStatusCode == 302):
+        # Get location header
+        locationHeader = responseHeaders.find(b"Location: ")
+        locationHeader += 10
+        newLocation = str(responseHeaders[locationHeader:responseHeaders.find(b"\r\n", locationHeader)])[2:-1]
+        newLocation = re.sub('^(/?)http(s?)://', '', newLocation, count=1)
+
+        # Recreate request with new resource
+        originServerRequest = method + ' ' + '/' + ' ' + 'HTTP/1.1'
+        originServerRequestHeader = 'Host: ' + newLocation
+        request = originServerRequest + '\r\n' + originServerRequestHeader + '\r\n\r\n'
+
+        # Contact new origin server
+        originServerSocket.close()
+        originServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        address = socket.gethostbyname(newLocation)
+        originServerSocket.connect((address, 80))
+        originServerSocket.sendall(request.encode())
+        response = originServerSocket.recv(BUFFER_SIZE)
+
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client
       # ~~~~ INSERT CODE ~~~~
 
+      # Send response to client 
       clientSocket.send(response)
 
       # ~~~~ END CODE INSERT ~~~~
 
       # Create a new file in the cache for the requested file.
-      cacheDir, file = os.path.split(cacheLocation)
-      print ('cached directory ' + cacheDir)
-      if not os.path.exists(cacheDir):
-        os.makedirs(cacheDir)
-      cacheFile = open(cacheLocation, 'wb')
+      # only cache if 301 or 200
+      if (responseStatusCode == 200) or (responseStatusCode == 301):
+        cacheDir, file = os.path.split(cacheLocation)
+        print ('cached directory ' + cacheDir)
+        if not os.path.exists(cacheDir):
+          os.makedirs(cacheDir)
+        cacheFile = open(cacheLocation, 'wb')
 
-      # Save origin server response in the cache file
-      # ~~~~ INSERT CODE ~~~~
+        # Save origin server response in the cache file
+        # ~~~~ INSERT CODE ~~~~
 
-      cacheFile.write(response)
+        # Cache only entity body, responses handled by proxy
+        responseEntityBodyIndex = response.find(b"\r\n\r\n")
+        cacheFile.write(response[responseEntityBodyIndex:])
 
-      # ~~~~ END CODE INSERT ~~~~
-      cacheFile.close()
-      print ('cache file closed')
+        # ~~~~ END CODE INSERT ~~~~
+        cacheFile.close()
+        print ('cache file closed')
 
       # finished communicating with origin server - shutdown socket writes
       print ('origin response received. Closing sockets')
