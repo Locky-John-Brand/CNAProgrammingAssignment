@@ -4,6 +4,7 @@ import sys
 import os
 import argparse
 import re
+import time
 
 # 1MB buffer size
 BUFFER_SIZE = 1000000
@@ -15,6 +16,8 @@ parser.add_argument('port', help='the port number of the proxy server')
 args = parser.parse_args()
 proxyHost = args.hostname
 proxyPort = int(args.port)
+
+cacheTimes = {}
 
 # Create a server socket, bind it to a port and start listening
 try:
@@ -139,7 +142,7 @@ while True:
 
     # Cache hit thus return OK and cached file data
     fileData = 'HTTP/1.1 200 OK\r\n\r\n' + str(cacheData)
-    clientSocket.send(str(fileData))
+    clientSocket.send(fileData.encode())
 
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
